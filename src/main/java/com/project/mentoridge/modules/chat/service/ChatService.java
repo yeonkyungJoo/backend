@@ -274,6 +274,7 @@ public class ChatService extends AbstractService {
     }
 
     public void accuseChatroom(User user, Long chatroomId) {
+        // TODO : 동시성 이슈 체크
         Chatroom chatroom = chatroomRepository.findById(chatroomId)
                 .orElseThrow(() -> new EntityNotFoundException(CHATROOM));
         chatroom.accuse(user, chatroomLogService);

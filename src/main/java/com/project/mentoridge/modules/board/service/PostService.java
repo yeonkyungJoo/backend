@@ -54,7 +54,13 @@ public class PostService extends AbstractService {
             return postRepository.findById(postId)
                     .orElseThrow(() -> new EntityNotFoundException(POST));
         }
-
+        
+        // -> Locking 방지를 위해 테이블로 분리 : insert로 해결
+        // -> 조회 시마다 Liking 카운트
+        // -> 조회 시 성능 이슈 발생
+        // TODO - CHECK
+        // - 좋아요 수는 높은 정합성을 요구하는 데이터인가? 아니다
+        // - 스케줄러로 특정 주기마다 count를 계산해서 Post 테이블에 좋아요 수 update
         private void setCounts(Page<PostResponse> postResponses) {
             List<Long> postIds = postResponses.stream().map(PostResponse::getPostId).collect(Collectors.toList());
             Map<Long, Long> postCommentQueryDtoMap = postQueryRepository.findPostCommentQueryDtoMap(postIds);
@@ -141,6 +147,8 @@ public class PostService extends AbstractService {
     public PostResponse getPostResponse(User user, Long postId) {
 
         user = getUser(user.getUsername());
+        // TODO : 동시성 이슈 체크
+        // select ~ for update
         Post post = getPost(postId);
         post.hit();
 
